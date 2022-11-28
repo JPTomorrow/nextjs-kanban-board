@@ -1,0 +1,18 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+model CardInfo {
+  id      Int    @id @default(autoincrement())
+  // createdAt DateTime @default(now())
+  title   String @db.VarChar(255)
+  content String @db.Text
+  author  String @db.VarChar(255)
+}
