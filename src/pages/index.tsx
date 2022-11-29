@@ -1,7 +1,6 @@
 import { InferGetServerSidePropsType, type NextPage } from "next";
 import Head from "next/head";
 
-import T3DefaultMessage from "@/components/T3DefaultMessage";
 import DBTest from "@/components/DBTest";
 
 import { CardInfo } from "@prisma/client";
@@ -24,8 +23,7 @@ const Home = ({ cards }: { cards: CardInfo[] }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-primary bg-gradient-to-b">
-        {/* <T3DefaultMessage /> */}
-        <DBTest cards={cards} />
+        {/* <DBTest cards={cards} /> */}
       </main>
     </>
   );
