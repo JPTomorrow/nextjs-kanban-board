@@ -2,7 +2,7 @@
 
 ## ROADMAP:
 
-- resizable number columns
+- (complete) resizable number columns
 - named columns
 - (complete) cards that support text
 - drag and drop functionality for the cards
