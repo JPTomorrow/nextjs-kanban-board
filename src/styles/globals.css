@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .icon-button {
+    @apply border-[1px] border-secondary bg-transparent p-3 transition-all duration-150 hover:scale-110 hover:bg-secondary hover:bg-opacity-40 hover:text-white;
+  }
+}
