@@ -1,35 +1,21 @@
 import { CardInfo } from "@prisma/client";
-import { DragEventHandler, useState } from "react";
-import Draggable, { DraggableEvent } from "react-draggable";
+import dynamic from "next/dynamic";
 
-const Card = ({ card }: { card: CardInfo }) => {
-  const [resetPosition, setResetPosition] = useState(null);
-  const onStart = (e: DraggableEvent) => {
-    console.log(e.timeStamp);
-  };
-  const onStop = (e: DraggableEvent) => {
-    console.log(e.timeStamp);
-  };
-  return (
-    <Draggable onStart={onStart} onStop={onStop}>
-      <div className="m-5 rounded-lg border-[1px] border-secondary bg-primary p-5">
-        <h1>{card.title}</h1>
-        <h2>{card.author}</h2>
-        <p>{card.content}</p>
-      </div>
-    </Draggable>
-  );
-};
+// needs to be no SSR because react-beutiful-dnd does not support SSR
+const DraggableCard = dynamic(
+  () => import("@/components/kanban/DraggableCard"),
+  { ssr: false }
+);
 
 const KbColumn = ({ cards }: { cards: CardInfo[] }) => {
   return (
-    <div className="mt-[70px] h-5/6 flex-col rounded-xl shadow-lg shadow-black transition-all duration-75 hover:scale-[102%]">
+    <div className="mt-[70px] h-5/6 flex-col rounded-xl shadow-lg shadow-black">
       <div className="flex h-1/5 w-[350px] items-center justify-start rounded-t-xl bg-[#310d0d]">
-        <h1 className=" pl-5 text-2xl text-primary">Placeholder Header</h1>
+        <h1 className="pl-5 text-2xl text-primary">Placeholder Header</h1>
       </div>
-      <div className=" h-4/5 w-[350px] rounded-b-xl border-[1px] border-secondary bg-[#ffeac3]">
+      <div className="h-4/5 w-[350px] rounded-b-xl border-[1px] border-secondary bg-[#ffeac3]">
         {cards.map((c: CardInfo, i) => (
-          <Card card={c} key={i} />
+          <DraggableCard key={i} />
         ))}
       </div>
     </div>
