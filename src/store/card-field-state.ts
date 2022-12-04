@@ -1,32 +1,75 @@
-import { CardInfo } from "@prisma/client";
+import { CardInfo, KanBanColumn, PrismaClient } from "@prisma/client";
 import create from "zustand";
 
-interface CardFieldState {
-  fields: CardInfo[][];
-  addColumn: () => void;
-  removeColumn: () => void;
-  setFields: (newState: CardInfo[][]) => void;
-  addCards: (cards: CardInfo[]) => void;
+type KanBanColumnWithCards = KanBanColumn & { cards: CardInfo[] };
+
+interface BoardState {
+  fields: KanBanColumnWithCards[];
+  addField: (name: string, cards: CardInfo[]) => void;
+  removeField: (columnId: number) => void;
+  setFields: (newFields: KanBanColumnWithCards[]) => void;
+  addCards: (columnId: number, cards: CardInfo[]) => void;
 }
 
-const useCardFieldStore = create<CardFieldState>()((set) => ({
-  fields: [] as CardInfo[][],
-  addColumn: () =>
+const { prisma } = require("@/utils/db");
+
+const useKanBanStore = create<BoardState>()((set) => ({
+  fields: [] as KanBanColumnWithCards[],
+  addField: async (name: string) => {
+    const newField: KanBanColumnWithCards = await prisma.kanBanColumn.create({
+      data: {
+        name: name,
+      },
+      include: {
+        cards: true,
+      },
+    });
+
     set((state) => ({
-      fields: [...state.fields, []],
-    })),
-  removeColumn: () =>
+      fields: [...state.fields, newField],
+    }));
+  },
+  removeField: async (columnId: number) => {
+    const removed = await prisma.kanBanColumn.delete({
+      where: {
+        id: columnId,
+      },
+    });
     set((state) => ({
-      fields: state.fields.slice(0, state.fields.length - 1),
-    })),
-  setFields: (newState: CardInfo[][]) =>
+      fields: state.fields.filter((x) => x !== removed),
+    }));
+  },
+  setFields: (newFields: KanBanColumnWithCards[]) =>
     set(() => ({
-      fields: newState,
+      fields: newFields,
     })),
-  addCards: (cards: CardInfo[]) =>
-    set((state) => ({
-      fields: [...state.fields, cards],
-    })),
+  addCards: async (columnId: number, cards: CardInfo[]) => {
+    const added = await prisma.kanBanColumn.update({
+      where: {
+        id: columnId,
+      },
+      include: {
+        cards: true,
+      },
+      data: {
+        cards: cards as any,
+      },
+    });
+
+    set((state) => {
+      const findField = state.fields.find((x) => x.id == added.id);
+      if (findField) {
+        findField.cards = added.cards;
+      } else {
+        state.fields.push(added);
+      }
+
+      return {
+        ...state,
+      };
+    });
+  },
 }));
 
-export { useCardFieldStore };
+export type { KanBanColumnWithCards, BoardState };
+export { useKanBanStore };

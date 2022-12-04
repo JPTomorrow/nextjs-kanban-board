@@ -4,15 +4,24 @@ generator client {
 }
 
 datasource db {
-  provider             = "mysql"
-  url                  = env("DATABASE_URL")
-  referentialIntegrity = "prisma"
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model KanBanColumn {
+  id    Int        @id @default(autoincrement())
+  name  String     @db.Text
+  cards CardInfo[]
 }
 
 model CardInfo {
-  id      Int    @id @default(autoincrement())
-  // createdAt DateTime @default(now())
-  title   String @db.VarChar(255)
-  content String @db.Text
-  author  String @db.VarChar(255)
+  id          Int          @id @default(autoincrement())
+  columnId    Int
+  title       String       @db.VarChar(255)
+  content     String       @db.Text
+  author      String       @db.VarChar(255)
+  ownerColumn KanBanColumn @relation(fields: [columnId], references: [id])
+
+  @@index([columnId])
 }
