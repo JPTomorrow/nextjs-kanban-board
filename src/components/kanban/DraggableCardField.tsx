@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import ReactDOM from "react-dom";
+import React, { useEffect, useState } from "react";
 import {
   DragDropContext,
   Droppable,
@@ -8,23 +7,21 @@ import {
   DraggableLocation,
 } from "react-beautiful-dnd";
 import { CardInfo } from "@prisma/client";
+import { useCardFieldStore } from "@/store/card-field-state";
 
-interface State {
-  id: string;
-  content: string;
-}
+// // fake data generator
+// const getItems = (count: number, offset: number = 0) =>
+//   Array.from({ length: count }, (v, k) => k).map(
+//     (k) =>
+//       ({
+//         id: `item-${k + offset}-${new Date().getTime()}`,
+//         title: "test 1",
+//         content: `item ${k + offset}`,
+//         author: "Justin Morrow",
+//       } as CardInfo)
+//   );
 
-// fake data generator
-const getItems = (count: number, offset: number = 0) =>
-  Array.from({ length: count }, (v, k) => k).map(
-    (k) =>
-      ({
-        id: `item-${k + offset}-${new Date().getTime()}`,
-        content: `item ${k + offset}`,
-      } as State)
-  );
-
-const reorder = (list: State[], startIndex: number, endIndex: number) => {
+const reorder = (list: CardInfo[], startIndex: number, endIndex: number) => {
   const result = Array.from(list);
   const [removed] = result.splice(startIndex, 1);
   result.splice(endIndex, 0, removed!);
@@ -36,8 +33,8 @@ const reorder = (list: State[], startIndex: number, endIndex: number) => {
  * Moves an item from one list to another list.
  */
 const move = (
-  source: State[],
-  destination: State[],
+  source: CardInfo[],
+  destination: CardInfo[],
   droppableSource: DraggableLocation,
   droppableDestination: DraggableLocation
 ) => {
@@ -55,7 +52,12 @@ const move = (
 };
 
 function DraggableCardField({ cards }: { cards: CardInfo[] }) {
-  const [state, setState] = useState([getItems(10), getItems(5, 10)]);
+  // const [state, setState] = useState<CardInfo[][]>([cards]);
+  const state = useCardFieldStore((state) => state);
+
+  useEffect(() => {
+    state.addCards(cards);
+  }, []);
 
   function onDragEnd(result: DropResult) {
     const { source, destination } = result;
@@ -69,17 +71,26 @@ function DraggableCardField({ cards }: { cards: CardInfo[] }) {
     const dInd = +destination.droppableId;
 
     if (sInd === dInd) {
-      const items = reorder(state[sInd]!, source.index, destination.index);
-      const newState = [...state];
+      const items = reorder(
+        state.fields[sInd]!,
+        source.index,
+        destination.index
+      );
+      const newState = [...state.fields];
       newState[sInd] = items;
-      setState(newState);
+      state.setFields(newState);
     } else {
-      const result = move(state[sInd]!, state[dInd]!, source, destination);
-      const newState = [...state];
+      const result = move(
+        state.fields[sInd]!,
+        state.fields[dInd]!,
+        source,
+        destination
+      );
+      const newState = [...state.fields];
       newState[sInd] = result[sInd];
       newState[dInd] = result[dInd];
 
-      setState(newState.filter((group) => group.length));
+      state.setFields(newState.filter((group) => group.length));
     }
   }
 
@@ -102,7 +113,7 @@ function DraggableCardField({ cards }: { cards: CardInfo[] }) {
         Add new item
       </button> */}
       <DragDropContext onDragEnd={onDragEnd}>
-        {state.map((el, ind) => (
+        {state.fields.map((el, ind) => (
           <Droppable key={ind} droppableId={`${ind}`}>
             {(provided, snapshot) => (
               <div
@@ -111,7 +122,11 @@ function DraggableCardField({ cards }: { cards: CardInfo[] }) {
                 className="w-full"
               >
                 {el.map((item, index) => (
-                  <Draggable key={item.id} draggableId={item.id} index={index}>
+                  <Draggable
+                    key={item.id}
+                    draggableId={item.id.toString()}
+                    index={index}
+                  >
                     {(provided, snapshot) => (
                       <div
                         ref={provided.innerRef}
@@ -132,9 +147,9 @@ function DraggableCardField({ cards }: { cards: CardInfo[] }) {
                           <button
                             type="button"
                             onClick={() => {
-                              const newState = [...state];
+                              const newState = [...state.fields];
                               newState[ind]!.splice(index, 1);
-                              setState(
+                              state.setFields(
                                 newState.filter((group) => group.length)
                               );
                             }}
