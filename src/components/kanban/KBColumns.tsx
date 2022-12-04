@@ -1,4 +1,3 @@
-// import dynamic from "next/dynamic";
 import {
   DragDropContext,
   Droppable,
@@ -6,17 +5,11 @@ import {
   DropResult,
   DraggableLocation,
 } from "react-beautiful-dnd";
-import { CardInfo } from "@prisma/client";
 import {
   KanBanColumnWithCards,
   useKanBanStore,
 } from "@/store/card-field-state";
-
-// needs to be no SSR because react-beutiful-dnd does not support SSR
-// const DraggableCardField = dynamic(
-//   () => import("@/components/kanban/DraggableCardField"),
-//   { ssr: false }
-// );
+import { AiOutlinePlus } from "react-icons/ai";
 
 const reorder = (
   list: KanBanColumnWithCards,
@@ -94,7 +87,7 @@ const KbColumn = ({ column }: { column: KanBanColumnWithCards }) => {
   }
 
   return (
-    <div className="mt-[70px] h-5/6 flex-col rounded-xl shadow-lg shadow-black">
+    <div className="h-full flex-col rounded-xl shadow-lg shadow-black">
       {/* <button
         type="button"
         onClick={() => {
@@ -112,7 +105,7 @@ const KbColumn = ({ column }: { column: KanBanColumnWithCards }) => {
         Add new item
       </button> */}
       <div className="flex h-1/5 w-[350px] items-center justify-start rounded-t-xl bg-[#310d0d]">
-        <h1 className="pl-5 text-2xl text-primary">Placeholder Header</h1>
+        <h1 className="pl-5 text-2xl text-primary">{column.name}</h1>
       </div>
       <div className="h-4/5 w-[350px] rounded-b-xl border-[1px] border-secondary bg-[#ffeac3]">
         <DragDropContext onDragEnd={onDragEnd}>
@@ -176,13 +169,24 @@ const KbColumn = ({ column }: { column: KanBanColumnWithCards }) => {
 };
 
 const KBColumns = () => {
-  const columns = useKanBanStore((state) => state.fields);
+  const [columns, addColumn] = useKanBanStore((state) => [
+    state.fields,
+    state.addField,
+  ]);
   return (
-    <div className="inline-flex h-full w-full items-center gap-x-3  overflow-auto px-5">
-      {columns.map((c, i) => (
-        <KbColumn key={i} column={c} />
-      ))}
-    </div>
+    <>
+      <div className="inline-flex h-screen w-full items-start gap-x-3 overflow-auto py-3 pl-5">
+        {columns.map((c, i) => (
+          <KbColumn key={i} column={c} />
+        ))}
+        <button
+          className="icon-button rounded-r-lg"
+          onClick={() => addColumn("Test 1", [])}
+        >
+          <AiOutlinePlus />
+        </button>
+      </div>
+    </>
   );
 };
 

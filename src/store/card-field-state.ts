@@ -11,63 +11,69 @@ interface BoardState {
   addCards: (columnId: number, cards: CardInfo[]) => void;
 }
 
-const { prisma } = require("@/utils/db");
-
 const useKanBanStore = create<BoardState>()((set) => ({
   fields: [] as KanBanColumnWithCards[],
   addField: async (name: string) => {
-    const newField: KanBanColumnWithCards = await prisma.kanBanColumn.create({
-      data: {
-        name: name,
+    await fetch("api/addColumn", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      include: {
-        cards: true,
-      },
+      body: JSON.stringify({
+        columnName: name,
+      }),
+    }).then((res) => {
+      res.json().then((r) => {
+        set((state) => ({
+          fields: [...state.fields, r as KanBanColumnWithCards],
+        }));
+      });
     });
-
-    set((state) => ({
-      fields: [...state.fields, newField],
-    }));
   },
   removeField: async (columnId: number) => {
-    const removed = await prisma.kanBanColumn.delete({
-      where: {
-        id: columnId,
+    await fetch("api/removeColumn", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        columnId: columnId,
+      }),
+    }).then((res) => {
+      res.json().then((r) => {
+        set((state) => ({
+          fields: state.fields.filter((x) => x !== r),
+        }));
+      });
     });
-    set((state) => ({
-      fields: state.fields.filter((x) => x !== removed),
-    }));
   },
   setFields: (newFields: KanBanColumnWithCards[]) =>
     set(() => ({
       fields: newFields,
     })),
   addCards: async (columnId: number, cards: CardInfo[]) => {
-    const added = await prisma.kanBanColumn.update({
-      where: {
-        id: columnId,
-      },
-      include: {
-        cards: true,
-      },
-      data: {
-        cards: cards as any,
-      },
-    });
-
-    set((state) => {
-      const findField = state.fields.find((x) => x.id == added.id);
-      if (findField) {
-        findField.cards = added.cards;
-      } else {
-        state.fields.push(added);
-      }
-
-      return {
-        ...state,
-      };
-    });
+    // const added = await prisma.kanBanColumn.update({
+    //   where: {
+    //     id: columnId,
+    //   },
+    //   include: {
+    //     cards: true,
+    //   },
+    //   data: {
+    //     cards: cards as any,
+    //   },
+    // });
+    // set((state) => {
+    //   const findField = state.fields.find((x) => x.id == added.id);
+    //   if (findField) {
+    //     findField.cards = added.cards;
+    //   } else {
+    //     state.fields.push(added);
+    //   }
+    //   return {
+    //     ...state,
+    //   };
+    // });
   },
 }));
 
