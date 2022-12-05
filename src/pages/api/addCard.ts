@@ -1,17 +1,16 @@
 import { prisma } from "@/utils/db";
-import { NextApiRequest } from "next";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async (req: NextApiRequest, res: any) => {
+export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const columnId = req.body.columnId;
     const card = req.body.cardInfo as {
-      author: string;
-      content: string;
-      columnId: number;
       title: string;
+      content: string;
+      author: string;
     };
 
-    const result = await prisma.cardInfo.create({
+    const added = await prisma.cardInfo.create({
       data: {
         columnId: columnId,
         author: card.author,
@@ -20,9 +19,8 @@ export default async (req: NextApiRequest, res: any) => {
       },
     });
 
-    res.status(200).json(result);
+    res.status(200).json(added);
   } catch (err) {
-    console.log(err);
-    res.status(403).json({ err: "Could not add card." });
+    res.status(200).json({ err: "Could not add card." });
   }
 };

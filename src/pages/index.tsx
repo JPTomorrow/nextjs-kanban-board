@@ -39,7 +39,7 @@ const Home = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex h-screen min-h-screen flex-col items-center justify-center bg-[#79e087]">
+      <main className="flex h-screen flex-col items-center justify-start bg-[#79e087]">
         <KanBanColumns />
       </main>
     </>

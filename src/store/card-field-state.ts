@@ -8,7 +8,10 @@ interface BoardState {
   addField: (name: string, cards: CardInfo[]) => void;
   removeField: (columnId: number) => void;
   setFields: (newFields: KanBanColumnWithCards[]) => void;
-  addCards: (columnId: number, cards: CardInfo[]) => void;
+  addCard: (
+    columnId: number,
+    card: { title: string; content: string; author: string }
+  ) => void;
 }
 
 const useKanBanStore = create<BoardState>()((set) => ({
@@ -45,9 +48,13 @@ const useKanBanStore = create<BoardState>()((set) => ({
       }),
     }).then((res) => {
       res.json().then((r) => {
-        set((state) => ({
-          fields: state.fields.filter((x) => x !== r),
-        }));
+        if (!r.err) {
+          set((state) => ({
+            fields: state.fields.filter((x) => x.id !== r),
+          }));
+        } else {
+          console.log(r.err);
+        }
       });
     });
   },
@@ -55,7 +62,36 @@ const useKanBanStore = create<BoardState>()((set) => ({
     set(() => ({
       fields: newFields,
     })),
-  addCards: async (columnId: number, cards: CardInfo[]) => {
+  addCard: async (
+    columnId: number,
+    card: { title: string; content: string; author: string }
+  ) => {
+    await fetch("api/addCard", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        columnId: columnId,
+        cardInfo: card,
+      }),
+    }).then((res) => {
+      res.json().then((r) => {
+        if (!r.err) {
+          set((state) => {
+            const findField = state.fields.find((x) => x.id == r.columnId);
+            if (findField) {
+              findField.cards.push(r as CardInfo);
+            }
+            return {
+              ...state,
+            };
+          });
+        } else {
+          console.log(r.err);
+        }
+      });
+    });
     // const added = await prisma.kanBanColumn.update({
     //   where: {
     //     id: columnId,
@@ -66,17 +102,6 @@ const useKanBanStore = create<BoardState>()((set) => ({
     //   data: {
     //     cards: cards as any,
     //   },
-    // });
-    // set((state) => {
-    //   const findField = state.fields.find((x) => x.id == added.id);
-    //   if (findField) {
-    //     findField.cards = added.cards;
-    //   } else {
-    //     state.fields.push(added);
-    //   }
-    //   return {
-    //     ...state,
-    //   };
     // });
   },
 }));

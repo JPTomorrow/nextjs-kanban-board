@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const columnId = req.body.columnId;
+    const columnId = req.body.columnId as number;
 
     const removed = await prisma.kanBanColumn.delete({
       where: {
@@ -14,6 +14,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(200).json(removed.id);
   } catch (err) {
     console.log(err);
-    res.status(403).json({ err: "Could not remove column." });
+    res.status(200).json({ err: "Could not remove column." });
   }
 };
