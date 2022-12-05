@@ -24,9 +24,13 @@ const useKanBanStore = create<BoardState>()((set) => ({
       }),
     }).then((res) => {
       res.json().then((r) => {
-        set((state) => ({
-          fields: [...state.fields, r as KanBanColumnWithCards],
-        }));
+        if (!r.err) {
+          set((state) => ({
+            fields: [...state.fields, r as KanBanColumnWithCards],
+          }));
+        } else {
+          console.log(r.err);
+        }
       });
     });
   },

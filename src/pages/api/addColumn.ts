@@ -17,6 +17,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(200).json(added);
   } catch (err) {
     console.log(err);
-    res.status(403).json({ err: "Could not add column." });
+    res.status(200).json({ err: "Could not add column." });
   }
 };

@@ -10,6 +10,8 @@ import {
   useKanBanStore,
 } from "@/store/card-field-state";
 import { AiOutlinePlus } from "react-icons/ai";
+import { RxCross1 } from "react-icons/rx";
+import { Dispatch, SetStateAction, useState } from "react";
 
 const reorder = (
   list: KanBanColumnWithCards,
@@ -168,20 +170,50 @@ const KbColumn = ({ column }: { column: KanBanColumnWithCards }) => {
   );
 };
 
+const AddColumnModal = ({
+  func,
+}: {
+  func: Dispatch<SetStateAction<boolean>>;
+}) => {
+  const addColumn = useKanBanStore((state) => state.addField);
+  const [columnName, setColumnName] = useState("");
+  const hideSelf = () => func(false);
+  return (
+    <div className="fixed inset-x-0 mx-auto flex h-auto w-[400px] justify-center self-center rounded-xl bg-primary p-5">
+      <input
+        className="rounded-xl border-[1px] border-secondary p-3"
+        placeholder="Column Name"
+        onChange={(e) => setColumnName(e.target.value)}
+      />
+      <button
+        onClick={() => {
+          addColumn(columnName, []);
+          hideSelf();
+        }}
+        className="icon-button ml-3 rounded-xl"
+      >
+        Submit
+      </button>
+      <button onClick={hideSelf} className="icon-button ml-3 rounded-xl">
+        <RxCross1 />
+      </button>
+    </div>
+  );
+};
+
 const KBColumns = () => {
-  const [columns, addColumn] = useKanBanStore((state) => [
-    state.fields,
-    state.addField,
-  ]);
+  const columns = useKanBanStore((state) => state.fields);
+  const [showAddColumn, setShowAddColumn] = useState(false);
   return (
     <>
       <div className="inline-flex h-screen w-full items-start gap-x-3 overflow-auto py-3 pl-5">
         {columns.map((c, i) => (
           <KbColumn key={i} column={c} />
         ))}
+        {showAddColumn ? <AddColumnModal func={setShowAddColumn} /> : null}
         <button
           className="icon-button rounded-r-lg"
-          onClick={() => addColumn("Test 1", [])}
+          onClick={() => setShowAddColumn(!showAddColumn)}
         >
           <AiOutlinePlus />
         </button>
