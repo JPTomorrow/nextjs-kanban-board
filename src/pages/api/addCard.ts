@@ -18,7 +18,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         content: card.content,
       },
     });
-
+    console.log("test");
     res.status(200).json(added);
   } catch (err) {
     res.status(200).json({ err: "Could not add card." });
