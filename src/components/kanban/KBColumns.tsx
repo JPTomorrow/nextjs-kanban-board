@@ -106,7 +106,7 @@ const KbColumn = ({
         <div className="absolute flex h-[80px] w-full items-center justify-between rounded-t-xl bg-primary-2">
           <h1 className="ml-5 text-2xl text-primary">{column.name}</h1>
           <button
-            onClick={() => state.removeField(column.id)}
+            onClick={() => { state.removeField(column.id)}}
             className="icon-button mr-5 rounded-md border-primary"
           >
             <AiOutlineDelete className="text-primary" />
